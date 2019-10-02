@@ -5,11 +5,11 @@ class Results extends React.Component {
 
     render() {
         return (
-            <div className={"ui container"} >
-                <label className={"label"} styles={{marginTop: '30px', paddingLeft: '30px'}}>
+            <div className={"ui label"} >
+                <label>
                     {this.props.result.map((data, id) => (
                         <h1 key={id} >
-                            {data.username} with id: {id} and password: {data.password}
+                            {data.username} with id: {id}, password: {data.password}, email: {data.email}
                         </h1>
                     ))}
                 </label>
