@@ -1,44 +1,98 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Results from './Results';
-import $ from 'jquery';
+import Modal from './Modal';
+import {Redirect} from 'react-router';
+import { connect } from 'react-redux';
+import { selectUser } from "../actions";
 
 class Login extends React.Component {
+
     state = {
         username: '',
         password: '',
-    }
+        user: null
+    };
 
     componentDidMount() { }
 
-    onInputChange = event => {
-        const {name, value} = event.target;
-        this.setState({
-            [name]: value
-        });
+    loginUser = async (un, pw) => {
+        console.log('User is attempting to login')
+        try {
+            const response = await fetch(`http://localhost:3000/user?username=${un}&password=${pw}`)
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                const json = await response.json();
+                this.setState({ user: json })
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    signUpUser = async (un, pw) => {
+        console.log('User is attempting to sign up')
+        try {
+            const response = await fetch(`http://localhost:3000/signup?username=${un}&password=${pw}`);
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+            const json = await response.json();
+            this.setState({ user: json })
+        } catch (err) {
+            console.log(err);
+        }
     }
 
-    onHitLogin = () => {
-        console.log(this.state);
-        this.props.onLogin(this.state.username, this.state.password);
-        // this.props.someMethod(this.state.username, this.state.password)
+    onHitLogin = async () => {
+
+        await this.loginUser(this.state.username, this.state.password)
+        // Waiting for data from database
+
+        // user doesn't exist in database
+        if (this.state.user.data.length == 0 ) {
+            console.log('no user exists for that login');
+            alert('Please sign up for an account');
+            return;
+            // indicate to user to sign up
+            // createBanker
+        }
+        console.log('will load banker information');
+            // loadBankersInformation
+        window.location.assign('https://www.google.com');
+    };
+
+    onHitSignUp = async () => {
+        if (this.state.username === '' || this.state.password === '') {
+            alert('Please fill out the username and password field and then click Sign up.');
+            return;
+        }
+        this.setState({user: null})
+        await this.signUpUser(this.state.username, this.state.password);
+        // Waiting for data from database
+
+        console.log(this.state.user);
+        window.location.assign('https://www.google.com');
+
+
+    };
+
+    onClickForgotPassword = () => {
+        return <Modal/>;
+
     }
-
-    onHitSignUp = () => {
-
-    }
-
-
 
     render() {
         return (
             <div className={"login"} >
 
                 <span className={"ui input"}>
+
                     <input name={"username"}
                            value={this.state.username}
-                           value={this.state.username}
                            type={"text"} placeholder={"username"}
-                           onChange={this.onInputChange}/>
+                           onChange={event => this.setState({username: event.target.value})}
+                    />
                 </span>
 
                 <span className={"ui input"} style={{margin: '5px'}}>
@@ -46,33 +100,45 @@ class Login extends React.Component {
                            value={this.state.password}
                            type={"text"}
                            placeholder={"password"}
-                           onChange={this.onInputChange}/>
+                           onChange={event => this.setState({password: event.target.value})}
+                    />
                 </span>
 
-                <div style={{margin: '8px', padding: '0px'}}>
+                <div style={{marginTop: '18px', padding: '0px'}}>
                     <div className="ui buttons">
 
-                        <button className="ui button blue" onClick={this.onHitLogin}>
+                        <button className="ui button blue" onClick={ this.onHitLogin }>
                             <i className="sign in alternate icon"></i>
                             Login
                         </button>
 
                         <div className="or"></div>
 
-                        <button className="ui button">
+                        <button className="ui button" onClick={ this.onHitSignUp }>
                             <i className="user icon"></i>
                             Sign Up
                         </button>
 
                     </div>
+
+                    <div style={{marginTop: '0px'}}>
+                        <Modal cursor={'hand'}/>
+                    </div>
                 </div>
+
             </div>
         );
     }
 }
 
+const mapStateToProps = (state) => {
+    return { user: state.user };
+};
 
-export default Login;
+export default connect(mapStateToProps, {
+    user: selectUser
+})(Login);
+//export default Login;
 
 
 
