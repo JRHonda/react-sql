@@ -4,10 +4,11 @@ import App from './client/App';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import reducers from './reducers';
+import AdminPage from "./client/AdminPage";
 
 ReactDOM.render(
     <Provider store={ createStore(reducers) }>
-        <App />
+        <AdminPage />
     </Provider>,
-    document.getElementById('root')
+    document.getElementById('admin')
 )

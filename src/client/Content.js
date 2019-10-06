@@ -1,12 +1,12 @@
 import React from 'react';
 
+// Main web page content
 const Content = () => {
     return (
             <div className={"ui container"} style={{display: 'flex', justifyContent: 'space-around', opacity: '0.9'}}>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     <div className={"ui raised very padded text container segment"}>
                         <h1>Our Services</h1>
-
                         <div className="ui horizontal segments">
                             <div className="ui segment">
                                 <p>Insurance</p>
@@ -24,13 +24,8 @@ const Content = () => {
                                 <strong>Rated #1 in Tennessee</strong>
                             </div>
                         </div>
-
                     </div>
-
-
-
                 </div>
-
             </div>
         );
 };

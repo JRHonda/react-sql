@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql');
@@ -33,12 +32,30 @@ app.use(cors());
 app.get('/', (req, res) => {
     res.send('Welcome to VandyBank');
 });
-//`INSERT INTO user VALUES (null, username, password, username + '@email.com')`
+
+// Sign user up
 app.all('/signup', (req, res) => {
-    let { username, password } = req.query
-    connection.query(`INSERT INTO user VALUES (null, '${username}', '${password}', '${username}@email.com')`, (err, results) => {
+
+    let payload = { };
+
+    payload = JSON.parse(req.query.payload).signUpPayload;
+
+    const username = payload.email.split("@")[0];
+
+    // ************************************************************************** //
+    // ************************************************************************** //
+    // Vulnerability #2 - Implementation Mistake                                  //
+    // A supplement to this vulnerability since no check is performed to see if   //
+    // the user that is signing up already exists in the database. This allows    //
+    // attackers to create duplicate accounts. Should perform a SELECT query      //
+    // in order to get the possible user and then return a response if the user   //
+    // already exists.
+    // ************************************************************************** //
+    // ************************************************************************** //
+
+    connection.query(`INSERT INTO user VALUES (null, '${username}', '${payload.password}', '${payload.email}', '${payload.phone}', '${payload.ssn}')`, (err, results) => {
         if(err) {
-            return res.send(err); // Bad because it gives away sql query format
+            return res.send(req.query); // Bad because it gives away sql query format
         } else {
             return res.json({data: results});
         }
@@ -50,12 +67,43 @@ app.all('/signup', (req, res) => {
 app.get('/user', (req, res) => {
     // Allows user to directly login from the address bar
     let { username, password } = req.query;
+
+    // ************************************************************************** //
+    // ************************************************************************** //
+    // Vulnerability #1 - Injection Attack                                        //
+    // Inserting the following text in password retrieves all users in the `user` //
+    // table in the `react_sql` database:                                         //
+    //                                                                            //
+    //                ;' OR 'x'='x                                                //
+    //                                                                            //
+    // The results are printed to the console.                                    //
+    // ************************************************************************** //
+    // ************************************************************************** //
+
     // Prepare query
     const preparedQuery = baseGETQueryString + `username=` + `'${username}'` + ` AND ` + `password=` + `'${password}'`; // <- This string tells you what sql is being used
     connection.query(preparedQuery, (err, results) => {
         if(err) {
             return res.send(err); // Bad because it gives away sql query format
         } else {
+            return res.json({data: results});
+        }
+    });
+});
+
+// Forgot password
+app.all('/forgot', (req, res) => {
+
+    let payload = { };
+
+    payload = JSON.parse(req.query.payload).forgotPasswordPayload;
+    console.log(payload);
+    connection.query(`SELECT * FROM user WHERE email='${payload.email}' AND phone='${payload.phone}' AND ssn='${payload.ssn}'`, (err, results) => {
+        if(err) {
+            console.log(err);
+            return res.send(err); // Bad because it gives away sql query format
+        } else {
+            console.log(res);
             return res.json({data: results});
         }
     });
